@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     Send,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function DraftReviewPage() {
+function DraftReviewContent() {
     const searchParams = useSearchParams();
     const profIds = searchParams.get("ids")?.split(",") || [];
     const templateId = searchParams.get("templateId");
@@ -46,7 +46,6 @@ export default function DraftReviewPage() {
             const data = await res.json();
             if (res.ok) {
                 console.log("Drafts received:", data);
-                // Ensure data is an array
                 setDrafts(Array.isArray(data) ? data : []);
             } else {
                 console.error("Generation error:", data.error);
@@ -78,7 +77,6 @@ export default function DraftReviewPage() {
 
             const data = await res.json();
             if (res.ok) {
-                // Update local status for sent drafts
                 const updatedDrafts = drafts.map(d => {
                     const result = data.find((r: any) => r.draft_id === d.id);
                     if (result?.status === 'sent') return { ...d, status: 'sent' };
@@ -190,5 +188,18 @@ export default function DraftReviewPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function DraftReviewPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                <p className="text-zinc-400">Loading Review Content...</p>
+            </div>
+        }>
+            <DraftReviewContent />
+        </Suspense>
     );
 }
