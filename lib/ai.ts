@@ -9,20 +9,55 @@ export interface GenerateDraftParams {
 }
 
 export async function generateEmailDraft(params: GenerateDraftParams) {
-    const provider = process.env.AI_PROVIDER || "google";
+    const provider = process.env.AI_PROVIDER || "groq";
 
     if (provider === "openai") {
         return generateWithOpenAI(params);
     } else if (provider === "groq") {
         return generateWithGroq(params);
+    } else if (provider === "ollama") {
+        return generateWithOllama(params);
     } else {
         return generateWithGemini(params);
+    }
+}
+
+async function generateWithOllama(params: GenerateDraftParams) {
+    const { profile, prof, template } = params;
+    const model = process.env.AI_MODEL || "llama3";
+    const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434/api/generate";
+
+    const prompt = getPrompt(profile, prof, template);
+
+    try {
+        const res = await fetch(ollamaUrl, {
+            method: "POST",
+            body: JSON.stringify({
+                model: model,
+                prompt: prompt,
+                stream: false,
+                format: "json",
+                system: "You are a helpful assistant that generates personalized cold emails. Output only JSON."
+            }),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Ollama error: ${res.status} ${errorText}`);
+        }
+
+        const data = await res.json();
+        return JSON.parse(data.response);
+    } catch (err: any) {
+        console.error("Ollama API Error:", err);
+        throw new Error(`Ollama Provider Error: ${err.message || "Unknown error"}`);
     }
 }
 
 async function generateWithGroq(params: GenerateDraftParams) {
     const { profile, prof, template } = params;
     const apiKey = process.env.GROQ_API_KEY || "";
+    const model = process.env.AI_MODEL || "llama-3.3-70b-versatile";
 
     if (!apiKey) throw new Error("GROQ_API_KEY is missing in .env");
 
@@ -36,7 +71,7 @@ async function generateWithGroq(params: GenerateDraftParams) {
                 { role: "system", content: "You are a helpful assistant that generates personalized cold emails. Output only JSON." },
                 { role: "user", content: prompt }
             ],
-            model: "llama-3.3-70b-versatile",
+            model: model,
             response_format: { type: "json_object" }
         });
 

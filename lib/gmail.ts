@@ -26,15 +26,17 @@ export async function sendEmail({
     const gmail = google.gmail({ version: 'v1', auth });
 
     const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+    const htmlBody = body.replace(/\n/g, '<br />');
+
     const messageParts = [
         `To: ${to}`,
-        'Content-Type: text/plain; charset=utf-8',
+        'Content-Type: text/html; charset=utf-8',
         'MIME-Version: 1.0',
         `Subject: ${utf8Subject}`,
         '',
-        body,
+        htmlBody,
     ];
-    const message = messageParts.join('\n');
+    const message = messageParts.join('\r\n');
 
     // The body needs to be base64url encoded.
     const encodedMessage = Buffer.from(message)
