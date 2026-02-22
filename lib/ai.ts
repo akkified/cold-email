@@ -142,8 +142,13 @@ async function generateWithGemini(params: GenerateDraftParams) {
 }
 
 function getPrompt(profile: any, prof: any, template: any) {
+    const lastName = prof.name.split(' ').pop() || prof.name;
+    const paperInfo = prof.paper_title
+        ? `Paper Title: "${prof.paper_title}"\n        Paper Summary: ${prof.paper_summary || "No summary available."}`
+        : `Research Area: ${prof.research_area || "General Research"}`;
+
     return `
-        You are a student writing a cold email to a professor for a research opportunity.
+        You are a student writing a highly personalized cold email to a professor for a research opportunity.
         
         STUDENT PROFILE:
         Name: ${profile.name}
@@ -153,24 +158,31 @@ function getPrompt(profile: any, prof: any, template: any) {
         Experience: ${profile.experience}
 
         PROFESSOR DETAILS:
-        Name: ${prof.name}
+        Full Name: ${prof.name}
+        Last Name: ${lastName}
         University: ${prof.university}
         Department: ${prof.department}
-        Recent Paper: ${prof.paper_title}
-        Paper Summary: ${prof.paper_summary}
-        Notes: ${prof.user_notes}
+        Research Area: ${prof.research_area || "General Research"}
+        ${prof.paper_title ? `Recent Paper: "${prof.paper_title}"` : ""}
+        ${prof.paper_summary ? `Paper Summary: ${prof.paper_summary}` : ""}
+        User Notes: ${prof.user_notes || "No additional notes."}
 
-        TEMPLATE:
-        Subject Pattern: ${template.subject_template}
-        Body Pattern: ${template.body_template}
-        Tone: ${template.tone}
-        Target Length: ${template.target_length}
+        TEMPLATE TO USE:
+        Subject: ${template.subject_template}
+        Body:
+        ${template.body_template}
 
         INSTRUCTIONS:
-        1. Personalize the email using the student's background and the professor's research.
-        2. Specifically mention the paper titled "${prof.paper_title}" and explain why it interests the student based on their experience.
-        3. Follow the body pattern but replace [PLACEHOLDERS] with actual content.
-        4. Maintain a ${template.tone} tone.
-        5. Output ONLY a raw JSON object with "subject" and "body" fields.
+        1. Parse the Body Template and replace ALL placeholders (like [Placeholder Name] or [PLACEHOLDER]) with the actual details provided.
+        2. Specific Mappings:
+           - Replace "[Last Name]" with "${lastName}".
+           - Replace "[Paper Title]" with "${prof.paper_title || prof.research_area}".
+           - Replace "[specific aspect of their work — e.g., the use of machine learning in physics modeling]" or similar research-related placeholders with a intelligent insight derived from the Paper Summary or Research Area.
+           - Replace "[YOUR_EXPERIENCE]" or "[Experience]" with a relevant summary of the student's background: "${profile.experience}".
+           - Replace "[something relevant in their field]" with a goal related to "${prof.research_area || "their research"}".
+        3. Tone: ${template.tone}
+        4. Target Length: ${template.target_length}
+        5. Ensure the email flows naturally and doesn't look like a template.
+        6. Output ONLY a raw JSON object with "subject" and "body" fields.
     `;
 }
