@@ -57,7 +57,7 @@ async function generateWithOllama(params: GenerateDraftParams) {
 async function generateWithGroq(params: GenerateDraftParams) {
     const { profile, prof, template } = params;
     const apiKey = process.env.GROQ_API_KEY || "";
-    const model = process.env.AI_MODEL || "llama-3.3-70b-versatile";
+    const model = process.env.AI_MODEL || "llama-3.1-8b-instant";
 
     if (!apiKey) throw new Error("GROQ_API_KEY is missing in .env");
 
