@@ -10,7 +10,9 @@ import {
     CheckCircle2,
     AlertCircle,
     ChevronRight,
-    FileText
+    FileText,
+    Clock,
+    Send
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -108,75 +110,149 @@ export default function CampaignPage({ params }: { params: Promise<{ id: string 
                     </div>
                 </div>
 
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-zinc-800/50">
-                            <tr>
-                                <th className="p-4 w-12 text-center">
-                                    <input
-                                        type="checkbox"
-                                        onChange={(e) => {
-                                            if (e.target.checked) setSelectedProfIds(professors.map(p => p.id));
-                                            else setSelectedProfIds([]);
-                                        }}
-                                        checked={selectedProfIds.length === professors.length && professors.length > 0}
-                                        className="rounded border-zinc-700 bg-zinc-900"
-                                    />
-                                </th>
-                                <th className="p-4 font-semibold text-zinc-300">Professor</th>
-                                <th className="p-4 font-semibold text-zinc-300">University</th>
-                                <th className="p-4 font-semibold text-zinc-300">Research Area</th>
-                                <th className="p-4 font-semibold text-zinc-300">Status</th>
-                                <th className="p-4 w-12"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800">
-                            {loading ? (
-                                Array.from({ length: 3 }).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan={6} className="p-8 h-10 bg-zinc-900/30"></td>
-                                    </tr>
-                                ))
-                            ) : professors.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="p-20 text-center">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <FileText className="h-10 w-10 text-zinc-700" />
-                                            <span className="text-zinc-500">No professors in this campaign.</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                professors.map((p) => (
-                                    <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
-                                        <td className="p-4 text-center">
+                <div className="space-y-12">
+                    {/* Pending Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-zinc-300 flex items-center gap-2">
+                                <Clock className="h-5 w-5 text-blue-500" />
+                                Pending Outreach
+                                <span className="ml-2 px-2 py-0.5 bg-zinc-800 text-zinc-500 rounded text-xs font-mono">
+                                    {professors.filter(p => p.status !== 'sent').length}
+                                </span>
+                            </h2>
+                        </div>
+
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-zinc-800/50">
+                                    <tr>
+                                        <th className="p-4 w-12 text-center">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedProfIds.includes(p.id)}
-                                                onChange={() => toggleSelect(p.id)}
-                                                className="rounded border-zinc-700 bg-zinc-900 text-blue-600"
+                                                onChange={(e) => {
+                                                    const pending = professors.filter(p => p.status !== 'sent');
+                                                    if (e.target.checked) setSelectedProfIds(pending.map(p => p.id));
+                                                    else setSelectedProfIds([]);
+                                                }}
+                                                checked={
+                                                    selectedProfIds.length > 0 &&
+                                                    selectedProfIds.length === professors.filter(p => p.status !== 'sent').length
+                                                }
+                                                className="rounded border-zinc-700 bg-zinc-900"
                                             />
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="font-medium">{p.name}</div>
-                                            <div className="text-xs text-zinc-500">{p.email}</div>
-                                        </td>
-                                        <td className="p-4 text-sm text-zinc-400">{p.university}</td>
-                                        <td className="p-4 text-sm text-zinc-400">{p.research_area || "-"}</td>
-                                        <td className="p-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700">
-                                                <AlertCircle className="h-3 w-3" />
-                                                No Draft
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <ChevronRight className="h-4 w-4 text-zinc-600" />
-                                        </td>
+                                        </th>
+                                        <th className="p-4 font-semibold text-zinc-300">Professor</th>
+                                        <th className="p-4 font-semibold text-zinc-300">University</th>
+                                        <th className="p-4 font-semibold text-zinc-300">Research Area</th>
+                                        <th className="p-4 font-semibold text-zinc-300">Status</th>
+                                        <th className="p-4 w-12"></th>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-800">
+                                    {loading ? (
+                                        Array.from({ length: 3 }).map((_, i) => (
+                                            <tr key={i} className="animate-pulse">
+                                                <td colSpan={6} className="p-8 h-10 bg-zinc-900/30"></td>
+                                            </tr>
+                                        ))
+                                    ) : professors.filter(p => p.status !== 'sent').length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="p-12 text-center text-zinc-500 text-sm">
+                                                No pending outreach in this campaign.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        professors.filter(p => p.status !== 'sent').map((p) => (
+                                            <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
+                                                <td className="p-4 text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedProfIds.includes(p.id)}
+                                                        onChange={() => toggleSelect(p.id)}
+                                                        className="rounded border-zinc-700 bg-zinc-900 text-blue-600"
+                                                    />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="font-medium">{p.name}</div>
+                                                    <div className="text-xs text-zinc-500">{p.email}</div>
+                                                </td>
+                                                <td className="p-4 text-sm text-zinc-400">{p.university}</td>
+                                                <td className="p-4 text-sm text-zinc-400">{p.research_area || "-"}</td>
+                                                <td className="p-4">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${p.status === 'generated'
+                                                        ? 'bg-blue-600/10 text-blue-400 border-blue-500/20'
+                                                        : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                                                        }`}>
+                                                        {p.status === 'generated' ? (
+                                                            <Sparkles className="h-3 w-3" />
+                                                        ) : (
+                                                            <AlertCircle className="h-3 w-3" />
+                                                        )}
+                                                        {p.status === 'none' ? 'No Draft' : p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <ChevronRight className="h-4 w-4 text-zinc-600" />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Sent Section */}
+                    {professors.some(p => p.status === 'sent') && (
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-bold text-zinc-300 flex items-center gap-2">
+                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                Success History
+                                <span className="ml-2 px-2 py-0.5 bg-zinc-800 text-zinc-500 rounded text-xs font-mono">
+                                    {professors.filter(p => p.status === 'sent').length}
+                                </span>
+                            </h2>
+                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden opacity-80">
+                                <table className="w-full text-left">
+                                    <thead className="bg-zinc-800/50">
+                                        <tr>
+                                            <th className="p-4 w-12 mr-10"></th>
+                                            <th className="p-4 font-semibold text-zinc-400">Professor</th>
+                                            <th className="p-4 font-semibold text-zinc-400">University</th>
+                                            <th className="p-4 font-semibold text-zinc-400">Research Area</th>
+                                            <th className="p-4 font-semibold text-zinc-400">Status</th>
+                                            <th className="p-4 w-12"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-800">
+                                        {professors.filter(p => p.status === 'sent').map((p) => (
+                                            <tr key={p.id} className="hover:bg-zinc-800/10 transition-colors">
+                                                <td className="p-4 text-center">
+                                                    <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="font-medium text-zinc-400">{p.name}</div>
+                                                    <div className="text-xs text-zinc-600">{p.email}</div>
+                                                </td>
+                                                <td className="p-4 text-sm text-zinc-500">{p.university}</td>
+                                                <td className="p-4 text-sm text-zinc-500">{p.research_area || "-"}</td>
+                                                <td className="p-4">
+                                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-500 border border-green-500/20">
+                                                        <Send className="h-3 w-3" />
+                                                        Emailed
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <ChevronRight className="h-4 w-4 text-zinc-700" />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

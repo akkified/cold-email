@@ -14,12 +14,32 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
         .from("professors")
-        .select("*")
+        .select(`
+            *,
+            drafts (
+                status,
+                created_at
+            )
+        `)
         .eq("campaign_id", campaignId)
         .order("created_at", { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data || []);
+
+    // Flatten data: find the latest draft status for each professor
+    const professorsWithStatus = (data || []).map((p: any) => {
+        const latestDraft = p.drafts?.sort((a: any, b: any) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )[0];
+
+        return {
+            ...p,
+            status: latestDraft?.status || "none",
+            drafts: undefined // Remove the nested drafts array for a cleaner response
+        };
+    });
+
+    return NextResponse.json(professorsWithStatus);
 }
 
 export async function POST(req: Request) {
