@@ -145,6 +145,7 @@ export default function CampaignPage({ params }: { params: Promise<{ id: string 
                                         <th className="p-4 font-semibold text-zinc-300">Professor</th>
                                         <th className="p-4 font-semibold text-zinc-300">University</th>
                                         <th className="p-4 font-semibold text-zinc-300">Research Area</th>
+                                        <th className="p-4 font-semibold text-zinc-300">Recent Paper</th>
                                         <th className="p-4 font-semibold text-zinc-300">Status</th>
                                         <th className="p-4 w-12"></th>
                                     </tr>
@@ -179,6 +180,9 @@ export default function CampaignPage({ params }: { params: Promise<{ id: string 
                                                 </td>
                                                 <td className="p-4 text-sm text-zinc-400">{p.university}</td>
                                                 <td className="p-4 text-sm text-zinc-400">{p.research_area || "-"}</td>
+                                                <td className="p-4 text-sm text-zinc-400 truncate max-w-[200px]" title={p.paper_title}>
+                                                    {p.paper_title || "-"}
+                                                </td>
                                                 <td className="p-4">
                                                     <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${p.status === 'generated'
                                                         ? 'bg-blue-600/10 text-blue-400 border-blue-500/20'
@@ -221,6 +225,7 @@ export default function CampaignPage({ params }: { params: Promise<{ id: string 
                                             <th className="p-4 font-semibold text-zinc-400">Professor</th>
                                             <th className="p-4 font-semibold text-zinc-400">University</th>
                                             <th className="p-4 font-semibold text-zinc-400">Research Area</th>
+                                            <th className="p-4 font-semibold text-zinc-400">Recent Paper</th>
                                             <th className="p-4 font-semibold text-zinc-400">Status</th>
                                             <th className="p-4 w-12"></th>
                                         </tr>
@@ -237,6 +242,9 @@ export default function CampaignPage({ params }: { params: Promise<{ id: string 
                                                 </td>
                                                 <td className="p-4 text-sm text-zinc-500">{p.university}</td>
                                                 <td className="p-4 text-sm text-zinc-500">{p.research_area || "-"}</td>
+                                                <td className="p-4 text-sm text-zinc-500 truncate max-w-[200px]">
+                                                    {p.paper_title || "-"}
+                                                </td>
                                                 <td className="p-4">
                                                     <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-500 border border-green-500/20">
                                                         <Send className="h-3 w-3" />

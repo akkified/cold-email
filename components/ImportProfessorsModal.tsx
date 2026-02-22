@@ -25,6 +25,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
         university: "",
         department: "",
         research_area: "",
+        paper_title: "",
     });
 
     if (!isOpen) return null;
@@ -43,6 +44,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                 university: cols[2]?.trim() || "",
                 department: cols[3]?.trim() || "",
                 research_area: cols[4]?.trim() || "",
+                paper_title: cols[5]?.trim() || "",
             };
         });
 
@@ -60,7 +62,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
             // Simple CSV parser (split by comma, handle quotes loosely)
             const rows = text.split(/\r?\n/).filter(line => line.trim());
             // Skip header if it looks like one
-            const startIdx = rows[0].toLowerCase().includes("name") ? 1 : 0;
+            const startIdx = (rows[0].toLowerCase().includes("name") || rows[0].toLowerCase().includes("email")) ? 1 : 0;
 
             const parsed = rows.slice(startIdx).map(row => {
                 const cols = row.split(",").map(c => c.replace(/^["']|["']$/g, '').trim());
@@ -70,6 +72,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                     university: cols[2] || "",
                     department: cols[3] || "",
                     research_area: cols[4] || "",
+                    paper_title: cols[5] || "",
                 };
             });
 
@@ -88,6 +91,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
             university: "",
             department: "",
             research_area: "",
+            paper_title: "",
         });
     };
 
@@ -171,7 +175,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                             </div>
                             <h3 className="text-lg font-bold mb-2">Upload your Professor List</h3>
                             <p className="text-zinc-500 text-sm max-w-sm mx-auto mb-6">
-                                Drop your .csv file here or click to browse. Ensure headers include Name, Email, University.
+                                Drop your .csv file here or click to browse. Ensure headers include Name, Email, University, Research Area, Paper Title.
                             </p>
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-800 rounded-xl text-sm font-medium text-zinc-300">
                                 <Upload className="h-4 w-4" />
@@ -184,7 +188,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                         <div className="space-y-4">
                             <div className="bg-blue-900/10 border border-blue-500/20 p-4 rounded-2xl flex gap-3 text-sm text-blue-400">
                                 <FileSpreadsheet className="h-5 w-5 flex-shrink-0" />
-                                <p>Copy a range from Google Sheets or Excel and paste it here. We'll automatically detect Name, Email, and University.</p>
+                                <p>Copy a range from Google Sheets or Excel and paste it here. We'll automatically detect Name, Email, University, Research Area, and Paper Title.</p>
                             </div>
                             <textarea
                                 onPaste={handlePaste}
@@ -233,6 +237,13 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                                         onChange={e => setManualEntry({ ...manualEntry, research_area: e.target.value })}
                                         className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                     />
+                                    <input
+                                        type="text"
+                                        placeholder="Research Paper Title"
+                                        value={manualEntry.paper_title}
+                                        onChange={e => setManualEntry({ ...manualEntry, paper_title: e.target.value })}
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                    />
                                 </div>
                                 <button
                                     type="submit"
@@ -255,11 +266,12 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                                             No professors added to this batch yet.
                                         </div>
                                     ) : (
-                                        <table className="w-full text-xs text-left">
+                                        <table className="w-full text-[10px] text-left">
                                             <thead className="bg-zinc-900 sticky top-0">
                                                 <tr>
                                                     <th className="p-3 border-b border-zinc-800">Name</th>
                                                     <th className="p-3 border-b border-zinc-800">Email</th>
+                                                    <th className="p-3 border-b border-zinc-800">Paper Title</th>
                                                     <th className="p-3 border-b border-zinc-800 w-8"></th>
                                                 </tr>
                                             </thead>
@@ -268,6 +280,7 @@ export default function ImportProfessorsModal({ isOpen, onClose, campaignId, onI
                                                     <tr key={i} className="hover:bg-zinc-900/50">
                                                         <td className="p-3 font-medium text-zinc-300">{p.name}</td>
                                                         <td className="p-3 text-zinc-500">{p.email}</td>
+                                                        <td className="p-3 text-zinc-500 truncate max-w-[150px]">{p.paper_title}</td>
                                                         <td className="p-3">
                                                             <button
                                                                 onClick={() => setPreviewData(previewData.filter((_, idx) => idx !== i))}
